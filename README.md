@@ -44,3 +44,30 @@ or:
 ```bash
 make pre-commit
 ```
+## How to run the script
+The pipeline is put inside a docker container. So, basically firing up the container does all it takes to run the 
+script (easy, right?).
+To run the container just run
+
+```bash
+sudo docker compose -p data_challeng up
+```
+
+If you wish run it as detached
+
+```bash
+sudo docker compose -p data_challeng up -d
+```
+
+This will fire up three container with one postgresql database and one for adminer, so you can view the data in the database.
+
+## Code explanation
+The code basically loads the excel file into a pandas dataframe, drops rows as per your requirements. Then it find the unique restaurant names
+and upsert them in the db. When the pipeline is done with the process the python container will shutdown, but the database container will remain up.
+
+Migration system is implemented using alembic.
+
+## Few explanations
+Few things were done to keep things simple (these should be avoided in the production):
+1. Database credentials are put directly in the docker compose rather than in the .env file
+2. Excel file location is hard coded int he code to keep things simple
