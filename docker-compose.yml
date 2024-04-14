@@ -1,0 +1,50 @@
+version: '3.9'
+
+services:
+  pipeline:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: "python"
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        source .venv/bin/activate
+        alembic upgrade head
+        python src/fig_data_challenge/main.py
+#    depends_on:
+#      db:
+#        condition: service_healthy
+
+  db:
+    image: postgres
+    container_name: "postgresql"
+    restart: always
+    shm_size: 128mb
+    volumes:
+      - database_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: example
+      POSTGRES_DB: data_challenge
+      POSTGRES_USER: postgres
+    ports:
+      - 25432:5432
+    healthcheck:
+      test: [ "CMD-SHELL", "sh -c 'pg_isready -U postgres -d data_challenge'" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    depends_on:
+      db:
+        condition: service_healthy
+
+
+volumes:
+  database_data:
